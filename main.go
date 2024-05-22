@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"text/template"
 
-	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 func executeTemplate(w http.ResponseWriter, filepath string) {
@@ -24,8 +24,8 @@ func executeTemplate(w http.ResponseWriter, filepath string) {
 	err = tpl.Execute(w, nil)
 	if err != nil {
 		log.Printf("executing template: %v", err)
-		http.Error(w,"There was an error executing the template.",
-		http.StatusInternalServerError)
+		http.Error(w, "There was an error executing the template.",
+			http.StatusInternalServerError)
 		return
 	}
 }
