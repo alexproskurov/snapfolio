@@ -32,6 +32,10 @@ func FAQ(tpl views.Template) http.HandlerFunc {
 			Answer: `Email us - <a href="mailto:support@example.com">
 				support@example.com</a>`,
 		},
+		{
+			Question: "Where is your office located?",
+			Answer:   "Our entire team is remote!",
+		},
 	}
 	return func(w http.ResponseWriter, r *http.Request) {
 		tpl.Execute(w, questions)
