@@ -47,7 +47,7 @@ func (t Template) Execute(w http.ResponseWriter, data interface{}) {
 
 	err := t.htmlTpl.Execute(w, data)
 	if err != nil {
-		log.Printf("executing template: %v", err)
+		log.Printf("executing template: %w", err)
 		http.Error(w, "There was an error executing the template.",
 			http.StatusInternalServerError)
 		return
