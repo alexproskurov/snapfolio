@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/alexproskurov/web-app/controllers"
+	"github.com/alexproskurov/web-app/models"
 	"github.com/alexproskurov/web-app/templates"
 	"github.com/alexproskurov/web-app/views"
 
@@ -31,15 +32,43 @@ func main() {
 		"tailwind.gohtml", "faq.gohtml",
 	))))
 
-	r.Get("/signup", controllers.StaticHandler(views.Must(views.ParseFS(
+	cfg := models.DefaultPostgresConfig()
+	db, err := models.Open(cfg)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		panic(err)
+	}
+	userService := models.UserService{
+		DB: db,
+	}
+
+	userC := controllers.User{
+		UserService: &userService,
+	}
+	userC.Templates.New = views.Must(views.ParseFS(
 		templates.FS,
 		"tailwind.gohtml", "signup.gohtml",
-	))))
+	))
+	userC.Templates.SignIn = views.Must(views.ParseFS(
+		templates.FS,
+		"tailwind.gohtml", "signin.gohtml",
+	))
+	r.Get("/signup", userC.New)
+	r.Post("/users", userC.Create)
+	r.Get("/signin", userC.SignIn)
 
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Page not found", http.StatusNotFound)
 	})
 
 	fmt.Println("Starting the server on :3000...")
-	http.ListenAndServe(":3000", r)
+	err = http.ListenAndServe(":3000", r)
+	if err != nil {
+		panic(err)
+	}
 }
