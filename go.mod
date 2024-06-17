@@ -2,7 +2,12 @@ module github.com/alexproskurov/web-app
 
 go 1.21.5
 
-require github.com/go-chi/chi/v5 v5.0.12
+require (
+	github.com/go-chi/chi/v5 v5.0.12
+	github.com/gorilla/csrf v1.7.2
+)
+
+require github.com/gorilla/securecookie v1.1.2 // indirect
 
 require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect
