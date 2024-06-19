@@ -82,14 +82,14 @@ func (u User) ProcessSignIn(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u User) CurrentUser(w http.ResponseWriter, r *http.Request) {
-	tokenCookie, err := r.Cookie(CookieSession)
+	token, err := readCookie(r, CookieSession)
 	if err != nil {
 		log.Println(err)
 		http.Redirect(w, r, "/signin", http.StatusFound)
 		return
 	}
 
-	user, err := u.SessionService.User(tokenCookie.Value)
+	user, err := u.SessionService.User(token)
 	if err != nil {
 		log.Println(err)
 		http.Redirect(w, r, "/signin", http.StatusFound)
