@@ -102,7 +102,7 @@ func (ss *SessionService) User(token string) (*User, error) {
 func (ss *SessionService) Delete(token string) error {
 	tokenHash := ss.hash(token)
 	_, err := ss.DB.Exec(`
-		DELETE * 
+		DELETE
 		FROM sessions 
 		WHERE token_hash = $1;`, tokenHash)
 	if err != nil {
