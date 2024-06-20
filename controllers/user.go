@@ -32,7 +32,7 @@ func (u User) Create(w http.ResponseWriter, r *http.Request) {
 	user, err := u.UserService.Create(email, password)
 	if err != nil {
 		log.Println(err)
-		http.Error(w, "something went wrong", http.StatusInternalServerError)
+		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
 		return
 	}
 
@@ -73,7 +73,7 @@ func (u User) ProcessSignIn(w http.ResponseWriter, r *http.Request) {
 	session, err := u.SessionService.Create(user.ID)
 	if err != nil {
 		log.Println(err)
-		http.Error(w, "something went wrong", http.StatusInternalServerError)
+		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
 		return
 	}
 
@@ -112,7 +112,7 @@ func (u User) ProcessSignOut(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
 		return
 	}
-
+	
 	deleteCookie(w, CookieSession)
 	http.Redirect(w, r, "/signin", http.StatusFound)
 }
