@@ -75,11 +75,28 @@ func (ss *SessionService) Create(userID int) (*Session, error) {
 
 func (ss *SessionService) User(token string) (*User, error) {
 	tokenHash := ss.hash(token)
-	_ = ss.DB.QueryRow(`
+	var user User
+	// Query for the session using hashed token.
+	row := ss.DB.QueryRow(`
 		SELECT user_id 
 		FROM sessions 
 		WHERE token_hash = $1`, tokenHash)
-	return nil, fmt.Errorf("not implemented")
+	err := row.Scan(&user.ID)
+	if err != nil {
+		return nil, fmt.Errorf("user session: %w", err)
+	}
+
+	// Using the user ID from the session to query for that user.
+	row = ss.DB.QueryRow(`
+		SELECT email, password_hash 
+		FROM users 
+		WHERE id = $1;`, user.ID)
+	err = row.Scan(&user.Email, &user.PasswordHash)
+	if err != nil {
+		return nil, fmt.Errorf("user session: %w", err)
+	}
+
+	return &user, nil
 }
 
 func (ss *SessionService) hash(token string) string {
