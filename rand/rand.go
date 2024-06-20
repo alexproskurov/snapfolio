@@ -6,8 +6,6 @@ import (
 	"fmt"
 )
 
-const SessionTokenBytes = 32
-
 // Bytes returns a random bytes slice using crypto/rand.
 // n is the number of bytes being used to generate the random bytes slice.
 func Bytes(n int) ([]byte, error) {
