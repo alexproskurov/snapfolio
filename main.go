@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/alexproskurov/web-app/controllers"
+	"github.com/alexproskurov/web-app/migrations"
 	"github.com/alexproskurov/web-app/models"
 	"github.com/alexproskurov/web-app/templates"
 	"github.com/alexproskurov/web-app/views"
@@ -46,8 +47,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	
-	err = models.MIgrate(db, "migrations")
+
+	err = models.MigrateFS(db, migrations.FS, ".")
 	if err != nil {
 		panic(err)
 	}
