@@ -42,15 +42,19 @@ func main() {
 		panic(err)
 	}
 	defer db.Close()
-
 	err = db.Ping()
 	if err != nil {
 		panic(err)
 	}
+	
+	err = models.MIgrate(db, "migrations")
+	if err != nil {
+		panic(err)
+	}
+
 	userService := models.UserService{
 		DB: db,
 	}
-
 	sessionService := models.SessionService{
 		DB: db,
 	}
