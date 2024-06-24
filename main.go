@@ -82,7 +82,10 @@ func main() {
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Page not found", http.StatusNotFound)
 	})
-	fmt.Println("Starting the server on :3000...")
+
+	umw := controllers.UserMiddleware{
+		SessionService: &sessionService,
+	}
 
 	err = godotenv.Load()
 	if err != nil {
@@ -95,7 +98,8 @@ func main() {
 		csrf.Secure(false),
 	)
 
-	err = http.ListenAndServe(":3000", csrfMw(r))
+	fmt.Println("Starting the server on :3000...")
+	err = http.ListenAndServe(":3000", csrfMw(umw.SetUser(r)))
 	if err != nil {
 		panic(err)
 	}
