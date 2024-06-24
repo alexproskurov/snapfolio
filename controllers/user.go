@@ -83,20 +83,12 @@ func (u User) ProcessSignIn(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u User) CurrentUser(w http.ResponseWriter, r *http.Request) {
-	token, err := readCookie(r, CookieSession)
-	if err != nil {
-		log.Println(err)
+	user := context.User(r.Context())
+	if user == nil {
 		http.Redirect(w, r, "/signin", http.StatusFound)
 		return
 	}
-
-	user, err := u.SessionService.User(token)
-	if err != nil {
-		log.Println(err)
-		http.Redirect(w, r, "/signin", http.StatusFound)
-		return
-	}
-
+	
 	fmt.Fprintf(w, "Current User: %s\n", user.Email)
 }
 
