@@ -76,6 +76,8 @@ func main() {
 
 	// Setup router and routes.
 	r := chi.NewRouter()
+	r.Use(csrfMw)
+	r.Use(umw.SetUser)
 	r.Use(middleware.Logger)
 	r.Get("/", controllers.StaticHandler(views.Must(views.ParseFS(
 		templates.FS,
@@ -103,7 +105,7 @@ func main() {
 
 	// Start the server.
 	fmt.Println("Starting the server on :3000...")
-	err = http.ListenAndServe(":3000", csrfMw(umw.SetUser(r)))
+	err = http.ListenAndServe(":3000", r)
 	if err != nil {
 		panic(err)
 	}
