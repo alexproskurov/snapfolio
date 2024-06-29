@@ -28,6 +28,9 @@ func readCookie(r *http.Request, name string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", name, err)
 	}
+	if c.Value == "" {
+		return "", fmt.Errorf("empty cookie value")
+	}
 
 	return c.Value, nil
 }
