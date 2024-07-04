@@ -26,6 +26,7 @@ go.work.sum
 .AppleDouble
 .LSOverride
 
+# Env variables
 .env
 
 # Icon must end with two \r
