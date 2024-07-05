@@ -15,7 +15,7 @@ const (
 
 type TokenManager struct {
 	// BytesPerToken is used to determine how many bytes to use
-	// when generating eaach session token. If this value is not set
+	// when generating each token. If this value is not set
 	// or is less than the MinBytesPerToken const it will be ignored
 	// and MinBytesPerToken will be used.
 	BytesPerToken int
