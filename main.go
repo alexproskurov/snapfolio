@@ -2,30 +2,68 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
-	"os"
 
 	"github.com/alexproskurov/web-app/controllers"
 	"github.com/alexproskurov/web-app/migrations"
 	"github.com/alexproskurov/web-app/models"
 	"github.com/alexproskurov/web-app/templates"
 	"github.com/alexproskurov/web-app/views"
-	"github.com/gorilla/csrf"
-	"github.com/joho/godotenv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/gorilla/csrf"
+	"github.com/spf13/viper"
 )
 
+type config struct {
+	PSQL models.PostgresConfig
+	SMTP models.SMTPConfig
+	CSRF struct {
+		Key    string
+		Secure bool
+	}
+	Server struct {
+		Address string
+	}
+}
+
+func loadEnvConfig(path string) (*config, error) {
+	v := viper.NewWithOptions(viper.KeyDelimiter("_"))
+	v.AddConfigPath(path)
+	v.SetConfigName(".env")
+	v.SetConfigType("env")
+
+	v.AutomaticEnv()
+
+	err := v.ReadInConfig()
+	if err != nil {
+		return nil, fmt.Errorf("read config: %w", err)
+	}
+
+	var cfg config
+	err = v.Unmarshal(&cfg)
+	if err != nil {
+		return nil, fmt.Errorf("config: %w", err)
+	}
+
+	return &cfg, nil
+}
+
 func main() {
+	cfg, err := loadEnvConfig(".")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(cfg)
+
 	// Setup the database.
-	cfg := models.DefaultPostgresConfig()
-	db, err := models.Open(cfg)
+	db, err := models.Open(cfg.PSQL)
 	if err != nil {
 		panic(err)
 	}
 	defer db.Close()
+
 	err = db.Ping()
 	if err != nil {
 		panic(err)
@@ -37,33 +75,33 @@ func main() {
 	}
 
 	// Setup services.
-	userService := models.UserService{
+	userService := &models.UserService{
 		DB: db,
 	}
-	sessionService := models.SessionService{
+	sessionService := &models.SessionService{
 		DB: db,
 	}
+	pwResetService := &models.PasswordResetService{
+		DB: db,
+	}
+	emailService := models.NewEmailService(cfg.SMTP)
 
 	// Setup middleware.
 	umw := controllers.UserMiddleware{
-		SessionService: &sessionService,
+		SessionService: sessionService,
 	}
 
-	err = godotenv.Load()
-	if err != nil {
-		log.Fatalf("err loading: %v", err)
-	}
-	csrfKey := os.Getenv("CSRF_KEY")
 	csrfMw := csrf.Protect(
-		[]byte(csrfKey),
-		// TODO: Change this before deploying.
-		csrf.Secure(false),
+		[]byte(cfg.CSRF.Key),
+		csrf.Secure(cfg.CSRF.Secure),
 	)
 
 	// Setup controllers.
 	userC := controllers.User{
-		UserService:    &userService,
-		SessionService: &sessionService,
+		UserService:          userService,
+		SessionService:       sessionService,
+		PasswordResetService: pwResetService,
+		EmailService:         emailService,
 	}
 	userC.Templates.New = views.Must(views.ParseFS(
 		templates.FS,
@@ -72,6 +110,10 @@ func main() {
 	userC.Templates.SignIn = views.Must(views.ParseFS(
 		templates.FS,
 		"tailwind.gohtml", "signin.gohtml",
+	))
+	userC.Templates.ForgotPassword = views.Must(views.ParseFS(
+		templates.FS,
+		"tailwind.gohtml", "forgot-pw.gohtml",
 	))
 
 	// Setup router and routes.
@@ -97,6 +139,8 @@ func main() {
 	r.Get("/signin", userC.SignIn)
 	r.Post("/signin", userC.ProcessSignIn)
 	r.Post("/signout", userC.ProcessSignOut)
+	r.Get("/forgot-pw", userC.ForgotPassword)
+	r.Post("/forgot-pw", userC.ProcessForgotPassword)
 	r.Route("/users/me", func(r chi.Router) {
 		r.Use(umw.RequireUser)
 		r.Get("/", userC.CurrentUser)
@@ -107,8 +151,8 @@ func main() {
 	})
 
 	// Start the server.
-	fmt.Println("Starting the server on :3000...")
-	err = http.ListenAndServe(":3000", r)
+	fmt.Printf("Starting the server on %s...", cfg.Server.Address)
+	err = http.ListenAndServe(cfg.Server.Address, r)
 	if err != nil {
 		panic(err)
 	}
