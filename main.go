@@ -17,15 +17,15 @@ import (
 )
 
 type config struct {
-	PSQL models.PostgresConfig
-	SMTP models.SMTPConfig
+	PSQL models.PostgresConfig `mapstructure:"postgres"`
+	SMTP models.SMTPConfig     `mapstructure:"smtp"`
 	CSRF struct {
 		Key    string
 		Secure bool
-	}
+	} `mapstructure:"csrf"`
 	Server struct {
 		Address string
-	}
+	} `mapstructure:"server"`
 }
 
 func loadEnvConfig(path string) (*config, error) {
@@ -55,7 +55,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(cfg)
 
 	// Setup the database.
 	db, err := models.Open(cfg.PSQL)
