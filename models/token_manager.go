@@ -21,6 +21,7 @@ type TokenManager struct {
 	BytesPerToken int
 }
 
+// New generates a token and its hash.
 func (t TokenManager) New() (token, tokenHash string, err error) {
 	bytesPerToken := t.BytesPerToken
 	if bytesPerToken < MinBytesPerToken {
@@ -36,6 +37,7 @@ func (t TokenManager) New() (token, tokenHash string, err error) {
 	return
 }
 
+// Hash returns a URL-safe base64-encoded SHA-256 hash of the token.
 func (t TokenManager) Hash(token string) string {
 	tokenHash := sha256.Sum256([]byte(token))
 	return base64.URLEncoding.EncodeToString(tokenHash[:])
