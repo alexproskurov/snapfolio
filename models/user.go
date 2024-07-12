@@ -81,3 +81,16 @@ func (us *UserService) UpdatePassword(userID int, password string) error {
 
 	return nil
 }
+
+func (us *UserService) UpdateEmail(userID int, email string) error {
+	_, err := us.DB.Exec(`
+		UPDATE users 
+		SET email = $2 
+		WHERE id = $1;
+	`, userID, email)
+	if err != nil {
+		return fmt.Errorf("update email: %w", err)
+	}
+	
+	return nil
+}
