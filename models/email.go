@@ -74,7 +74,7 @@ func (es *EmailService) ForgotPassword(to, resetURL string) error {
 		),
 		HTML: fmt.Sprintf(`<p>To reset your password, 
 		please visit the following link: 
-		<a href="%s>%s</a></p>`, resetURL, resetURL),
+		<a href="%s">%s</a></p>`, resetURL, resetURL),
 	}
 
 	err := es.Send(email)
