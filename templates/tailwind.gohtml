@@ -8,7 +8,9 @@
 <body class="min-h-screen bg-gray-100">
   <header class="bg-gradient-to-r from-blue-800 to-indigo-800 text-white">
     <nav class="px-8 py-6 flex items-center">
-      <div class="text-4xl pr-12 font-serif">Photogram</div>
+      <div class="text-4xl pr-12 font-serif">
+        <a href="/">Photogram</a>
+      </div>
       <div class="flex-grow">
         <a class="text-lg font-semibold hover:text-blue-100 pr-8" href="/">Home</a>
         <a class="text-lg font-semibold hover:text-blue-100 pr-8" href="/contact">Contact</a>
@@ -20,7 +22,13 @@
             <div class="hidden">
               {{csrfField}}
             </div>
-            <button type="submit">Sign out</button>
+            <div class="flex items-center">
+              <a class="flex px-5 h-10 items-center rounded-l" href="/users/edit">
+                <img src="https://www.gravatar.com/avatar/0046a83717950eb21c011a29f0be8803?d=mp&amp;s=40" 
+                  class="rounded-full opacity-75">
+              </a>
+              <button type="submit">Sign out</button>
+            </div>
           </form>
         {{else}}
           <a class="pr-4" href="/signin">Sign in</a>
