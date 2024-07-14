@@ -5,8 +5,10 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/alexproskurov/web-app/context"
+	"github.com/alexproskurov/web-app/errors"
 	"github.com/alexproskurov/web-app/models"
 )
 
@@ -34,21 +36,26 @@ func (u User) New(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u User) Create(w http.ResponseWriter, r *http.Request) {
-	email := r.FormValue("email")
-	password := r.FormValue("password")
+	var data struct {
+		Email    string
+		Password string
+	}
+	data.Email = r.FormValue("email")
+	data.Password = r.FormValue("password")
 
-	user, err := u.UserService.Create(email, password)
+	user, err := u.UserService.Create(data.Email, data.Password)
 	if err != nil {
-		log.Println(err)
-		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
+		if errors.Is(err, models.ErrEmailTaken) {
+			err = errors.Public(err, "That email address is already associated with an account.")
+		}
+		u.Templates.SignIn.Execute(w, r, data, err)
 		return
 	}
 
 	session, err := u.SessionService.Create(user.ID)
 	if err != nil {
-		log.Println(err)
-		// TODO: Show a warning about not being able to sign in the user in.
-		http.Redirect(w, r, "/signin", http.StatusFound)
+		err = errors.Public(err, "Unable to sign in. Please try again later.")
+		u.Templates.SignIn.Execute(w, r, data, err)
 		return
 	}
 
@@ -73,15 +80,15 @@ func (u User) ProcessSignIn(w http.ResponseWriter, r *http.Request) {
 	data.Password = r.FormValue("password")
 	user, err := u.UserService.Authenticate(data.Email, data.Password)
 	if err != nil {
-		log.Panicln(err)
-		http.Error(w, "Something went wrong.", http.StatusUnauthorized)
+		err = errors.Public(err, "Wrong email address or password. Try again or click Forgot password to reset it.")
+		u.Templates.SignIn.Execute(w, r, data, err)
 		return
 	}
 
 	session, err := u.SessionService.Create(user.ID)
 	if err != nil {
-		log.Println(err)
-		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
+		err = errors.Public(err, "Unable to sign in. Please try again later.")
+		u.Templates.SignIn.Execute(w, r, data, err)
 		return
 	}
 
@@ -128,9 +135,12 @@ func (u User) ProcessForgotPassword(w http.ResponseWriter, r *http.Request) {
 
 	pwReset, err := u.PasswordResetService.Create(data.Email)
 	if err != nil {
-		// TODO: Handle other cases. For instance, if a user does not exist with this email address.
-		log.Println(err)
-		http.Error(w, "Something went wwrong.", http.StatusInternalServerError)
+		if errors.Is(err, models.ErrUserDoesNotExist) {
+			err = errors.Public(err, "Couldn't find your Photogram Account")
+		} else {
+			err = errors.Public(err, "Something went wrong.")
+		}
+		u.Templates.ForgotPassword.Execute(w, r, data, err)
 		return
 	}
 
@@ -140,8 +150,8 @@ func (u User) ProcessForgotPassword(w http.ResponseWriter, r *http.Request) {
 	resetURL := "https://www.photogram.com/reset-pw?" + vals.Encode()
 	err = u.EmailService.ForgotPassword(data.Email, resetURL)
 	if err != nil {
-		log.Println(err)
-		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
+		err = errors.Public(err, "Something went wrong.")
+		u.Templates.ForgotPassword.Execute(w, r, data, err)
 		return
 	}
 	// Don't render the reset token here! We need the user to confirm they have
@@ -168,15 +178,19 @@ func (u User) ProcessResetPassword(w http.ResponseWriter, r *http.Request) {
 	user, err := u.PasswordResetService.Consume(data.Token)
 	if err != nil {
 		log.Println(err)
-		// TODO: Distinguish between types of errors.
-		http.Error(w, "Soomething went wrong.", http.StatusInternalServerError)
+		if strings.Contains(err.Error(), "token expired:") {
+			err = errors.Public(err, "Your session has expired. Please fill out the forgot password form again.")
+		} else {
+			err = errors.Public(err, "Something went wrong.")
+		}
+		u.Templates.ResetPassword.Execute(w, r, data, err)
 		return
 	}
 
 	err = u.UserService.UpdatePassword(user.ID, data.Password)
 	if err != nil {
-		log.Println(err)
-		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
+		err = errors.Public(err, "Something went wrong.")
+		u.Templates.ResetPassword.Execute(w, r, data, err)
 		return
 	}
 
@@ -185,8 +199,8 @@ func (u User) ProcessResetPassword(w http.ResponseWriter, r *http.Request) {
 	// to the sign in page.
 	session, err := u.SessionService.Create(user.ID)
 	if err != nil {
-		log.Println(err)
-		http.Redirect(w, r, "/signin", http.StatusFound)
+		err = errors.Public(err, "Unable to sign in. Please try again later.")
+		u.Templates.SignIn.Execute(w, r, data, err)
 		return
 	}
 	setCookie(w, CookieSession, session.Token)
@@ -210,8 +224,8 @@ func (u User) ProcessChangeEmail(w http.ResponseWriter, r *http.Request) {
 
 	err := u.UserService.UpdateEmail(user.ID, data.Email)
 	if err != nil {
-		log.Println(err)
-		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
+		err = errors.Public(err, "Something went wrong.")
+		u.Templates.ResetPassword.Execute(w, r, data, err)
 		return
 	}
 
@@ -220,8 +234,8 @@ func (u User) ProcessChangeEmail(w http.ResponseWriter, r *http.Request) {
 	// to the sign in page.
 	session, err := u.SessionService.Create(user.ID)
 	if err != nil {
-		log.Println(err)
-		http.Redirect(w, r, "/signin", http.StatusFound)
+		err = errors.Public(err, "Unable to sign in. Please try again later.")
+		u.Templates.SignIn.Execute(w, r, data, err)
 		return
 	}
 	setCookie(w, CookieSession, session.Token)

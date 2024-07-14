@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -9,6 +10,10 @@ import (
 
 const (
 	DefaultResetDuration = 1 * time.Hour
+)
+
+var (
+	ErrUserDoesNotExist = errors.New("models: user with provided email address does not exist")
 )
 
 type PasswordReset struct {
@@ -38,7 +43,9 @@ func (p *PasswordResetService) Create(email string) (*PasswordReset, error) {
 
 	err := row.Scan(&userID)
 	if err != nil {
-		// TODO: Consider returning a specific error when the user does not exist.
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrUserDoesNotExist
+		}
 		return nil, fmt.Errorf("create password: %w", err)
 	}
 
