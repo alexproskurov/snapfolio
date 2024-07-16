@@ -12,10 +12,6 @@ const (
 	DefaultResetDuration = 1 * time.Hour
 )
 
-var (
-	ErrUserDoesNotExist = errors.New("models: user with provided email address does not exist")
-)
-
 type PasswordReset struct {
 	ID     int
 	UserID int
