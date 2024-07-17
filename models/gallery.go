@@ -48,10 +48,10 @@ func (s *GalleryService) GetByID(id int) (*Gallery, error) {
 	}
 
 	row := s.DB.QueryRow(`
-		SELECT id, user_id, title 
+		SELECT user_id, title 
 		FROM galleries
 		WHERE id = $1;`, gallery.ID)
-	err := row.Scan(&gallery.UserID, gallery.Title)
+	err := row.Scan(&gallery.UserID, &gallery.Title)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrNotFound
