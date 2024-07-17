@@ -98,8 +98,8 @@ func (s *GalleryService) GetByUserID(userID int) ([]Gallery, error) {
 }
 
 func (s *GalleryService) Update(gallery *Gallery) error {
-	if gallery == nil {
-		return fmt.Errorf("update gallery: empty gallery")
+	if gallery.Title == "" {
+		return fmt.Errorf("update gallery: empty title")
 	}
 
 	_, err := s.DB.Exec(`
