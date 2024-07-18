@@ -137,10 +137,10 @@ func (u User) ProcessForgotPassword(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.Is(err, models.ErrUserDoesNotExist) {
 			err = errors.Public(err, "Couldn't find your Photogram Account")
-		} else {
-			err = errors.Public(err, "Something went wrong.")
+			u.Templates.ForgotPassword.Execute(w, r, data, err)
+			return
 		}
-		u.Templates.ForgotPassword.Execute(w, r, data, err)
+		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
 		return
 	}
 
@@ -150,7 +150,7 @@ func (u User) ProcessForgotPassword(w http.ResponseWriter, r *http.Request) {
 	resetURL := "https://www.photogram.com/reset-pw?" + vals.Encode()
 	err = u.EmailService.ForgotPassword(data.Email, resetURL)
 	if err != nil {
-		err = errors.Public(err, "Something went wrong.")
+		err = errors.Public(err, "Something went wrong. Try again later.")
 		u.Templates.ForgotPassword.Execute(w, r, data, err)
 		return
 	}
@@ -180,17 +180,16 @@ func (u User) ProcessResetPassword(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		if strings.Contains(err.Error(), "token expired:") {
 			err = errors.Public(err, "Your session has expired. Please fill out the forgot password form again.")
-		} else {
-			err = errors.Public(err, "Something went wrong.")
+			u.Templates.ResetPassword.Execute(w, r, data, err)
+			return
 		}
-		u.Templates.ResetPassword.Execute(w, r, data, err)
+		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
 		return
 	}
 
 	err = u.UserService.UpdatePassword(user.ID, data.Password)
 	if err != nil {
-		err = errors.Public(err, "Something went wrong.")
-		u.Templates.ResetPassword.Execute(w, r, data, err)
+		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
 		return
 	}
 
@@ -224,8 +223,7 @@ func (u User) ProcessChangeEmail(w http.ResponseWriter, r *http.Request) {
 
 	err := u.UserService.UpdateEmail(user.ID, data.Email)
 	if err != nil {
-		err = errors.Public(err, "Something went wrong.")
-		u.Templates.ResetPassword.Execute(w, r, data, err)
+		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
 		return
 	}
 
