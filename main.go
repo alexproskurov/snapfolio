@@ -84,6 +84,9 @@ func main() {
 		DB: db,
 	}
 	emailService := models.NewEmailService(cfg.SMTP)
+	galleryService := &models.GalleryService{
+		DB: db,
+	}
 
 	// Setup middleware.
 	umw := controllers.UserMiddleware{
@@ -128,6 +131,26 @@ func main() {
 		"tailwind.gohtml", "change-email.gohtml",
 	))
 
+	galleryC := controllers.Gallery{
+		GalleryService: galleryService,
+	}
+	galleryC.Templates.New = views.Must(views.ParseFS(
+		templates.FS,
+		"tailwind.gohtml", "galleries/new.gohtml",
+	))
+	galleryC.Templates.Edit = views.Must(views.ParseFS(
+		templates.FS,
+		"tailwind.gohtml", "galleries/edit.gohtml",
+	))
+	galleryC.Templates.Index = views.Must(views.ParseFS(
+		templates.FS,
+		"tailwind.gohtml", "galleries/index.gohtml",
+	))
+	galleryC.Templates.Show = views.Must(views.ParseFS(
+		templates.FS,
+		"tailwind.gohtml", "galleries/show.gohtml",
+	))
+
 	// Setup router and routes.
 	r := chi.NewRouter()
 	r.Use(csrfMw)
@@ -146,6 +169,7 @@ func main() {
 		"tailwind.gohtml", "faq.gohtml",
 	))))
 
+	//users
 	r.Get("/signup", userC.New)
 	r.Post("/users", userC.Create)
 	r.Get("/signin", userC.SignIn)
@@ -162,6 +186,21 @@ func main() {
 		r.Post("/edit", userC.ProcessChangeEmail)
 	})
 
+	//galleries
+	r.Route("/galleries", func(r chi.Router) {
+		r.Get("/{id}", galleryC.Show)
+		r.Group(func(r chi.Router) {
+			r.Use(umw.RequireUser)
+			r.Get("/", galleryC.Index)
+			r.Get("/new", galleryC.New)
+			r.Post("/", galleryC.Create)
+			r.Get("/{id}/edit", galleryC.Edit)
+			r.Post("/{id}", galleryC.Update)
+			r.Post("/{id}/delete", galleryC.Delete)
+		})
+	})
+
+	//other
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Page not found", http.StatusNotFound)
 	})
