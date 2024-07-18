@@ -93,6 +93,7 @@ func main() {
 	csrfMw := csrf.Protect(
 		[]byte(cfg.CSRF.Key),
 		csrf.Secure(cfg.CSRF.Secure),
+		csrf.Path("/"),
 	)
 
 	// Setup controllers.
@@ -154,11 +155,11 @@ func main() {
 	r.Post("/forgot-pw", userC.ProcessForgotPassword)
 	r.Get("/reset-pw", userC.ResetPassword)
 	r.Post("/reset-pw", userC.ProcessResetPassword)
-	r.Get("/users/edit", userC.ChangeEmail)
-	r.Post("/users/edit", userC.ProcessChangeEmail)
-	r.Route("/users/me", func(r chi.Router) {
+	r.Route("/users", func(r chi.Router) {
 		r.Use(umw.RequireUser)
-		r.Get("/", userC.CurrentUser)
+		r.Get("/me", userC.CurrentUser)
+		r.Get("/edit", userC.ChangeEmail)
+		r.Post("/edit", userC.ProcessChangeEmail)
 	})
 
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
