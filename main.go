@@ -171,7 +171,6 @@ func main() {
 
 	//users
 	r.Get("/signup", userC.New)
-	r.Post("/users", userC.Create)
 	r.Get("/signin", userC.SignIn)
 	r.Post("/signin", userC.ProcessSignIn)
 	r.Post("/signout", userC.ProcessSignOut)
@@ -180,10 +179,13 @@ func main() {
 	r.Get("/reset-pw", userC.ResetPassword)
 	r.Post("/reset-pw", userC.ProcessResetPassword)
 	r.Route("/users", func(r chi.Router) {
-		r.Use(umw.RequireUser)
-		r.Get("/me", userC.CurrentUser)
-		r.Get("/edit", userC.ChangeEmail)
-		r.Post("/edit", userC.ProcessChangeEmail)
+		r.Post("/", userC.Create)
+		r.Group(func(r chi.Router) {
+			r.Use(umw.RequireUser)
+			r.Get("/me", userC.CurrentUser)
+			r.Get("/edit", userC.ChangeEmail)
+			r.Post("/edit", userC.ProcessChangeEmail)
+		})
 	})
 
 	//galleries
