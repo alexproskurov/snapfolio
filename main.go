@@ -85,7 +85,8 @@ func main() {
 	}
 	emailService := models.NewEmailService(cfg.SMTP)
 	galleryService := &models.GalleryService{
-		DB: db,
+		DB:           db,
+		ImageService: models.DefaultImageServiceConfig(),
 	}
 
 	// Setup middleware.
