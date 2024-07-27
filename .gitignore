@@ -26,6 +26,12 @@ go.work.sum
 .AppleDouble
 .LSOverride
 
+# Binary file
+web-app
+
+# Images directory during development
+images/
+
 # Env variables
 .env
 
