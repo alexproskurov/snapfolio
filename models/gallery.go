@@ -4,8 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"io"
-	"os"
 )
 
 type Gallery struct {
@@ -15,8 +13,8 @@ type Gallery struct {
 }
 
 type GalleryService struct {
-	DB           *sql.DB
-	ImageService *imageService
+	DB            *sql.DB
+	ImageStorager ImageStorager
 }
 
 func (s *GalleryService) Create(userID int, title string) (*Gallery, error) {
@@ -130,8 +128,7 @@ func (s *GalleryService) Delete(id int) error {
 	if err != nil {
 		return fmt.Errorf("delete gallery: %w", err)
 	}
-
-	err = os.RemoveAll(s.ImageService.galleryDir(id))
+	err = s.ImageStorager.DeleteAllImages(id)
 	if err != nil {
 		return fmt.Errorf("delete gallery images: %w", err)
 	}
@@ -139,18 +136,18 @@ func (s *GalleryService) Delete(id int) error {
 	return nil
 }
 
-func (s *GalleryService) Images(galleryID int) ([]Image, error) {
-	return s.ImageService.Images(galleryID)
-}
+// func (s *GalleryService) Images(galleryID int) ([]Image, error) {
+// 	return s.ImageStorager.Images(galleryID)
+// }
 
-func (s *GalleryService) Image(galleryID int, filename string) (Image, error) {
-	return s.ImageService.Image(galleryID, filename)
-}
+// func (s *GalleryService) Image(galleryID int, filename string) (Image, error) {
+// 	return s.ImageStorager.Image(galleryID, filename)
+// }
 
-func (s *GalleryService) CreateImage(galleryID int, filename string, contents io.ReadSeeker) error {
-	return s.ImageService.CreateImage(galleryID, filename, contents)
-}
+// func (s *GalleryService) CreateImage(galleryID int, filename string, contents io.ReadSeeker) error {
+// 	return s.ImageStorager.CreateImage(galleryID, filename, contents)
+// }
 
-func (s *GalleryService) DeleteImage(galleryID int, filename string) error {
-	return s.ImageService.DeleteImage(galleryID, filename)
-}
+// func (s *GalleryService) DeleteImage(galleryID int, filename string) error {
+// 	return s.ImageStorager.DeleteImage(galleryID, filename)
+// }
