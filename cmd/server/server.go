@@ -17,7 +17,7 @@ import (
 )
 
 type config struct {
-	PSQL models.PostgresConfig `mapstructure:"postgres"`
+	PSQL models.PostgresConfig `mapstructure:"psql"`
 	SMTP models.SMTPConfig     `mapstructure:"smtp"`
 	CSRF struct {
 		Key    string
