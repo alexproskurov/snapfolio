@@ -28,7 +28,7 @@ type config struct {
 	} `mapstructure:"server"`
 }
 
-func loadEnvConfig(path string) (*config, error) {
+func loadEnvConfig(path string) (config, error) {
 	v := viper.NewWithOptions(viper.KeyDelimiter("_"))
 	v.AddConfigPath(path)
 	v.SetConfigName(".env")
@@ -38,16 +38,16 @@ func loadEnvConfig(path string) (*config, error) {
 
 	err := v.ReadInConfig()
 	if err != nil {
-		return nil, fmt.Errorf("read config: %w", err)
+		return config{}, fmt.Errorf("read config: %w", err)
 	}
 
 	var cfg config
 	err = v.Unmarshal(&cfg)
 	if err != nil {
-		return nil, fmt.Errorf("config: %w", err)
+		return cfg, fmt.Errorf("config: %w", err)
 	}
 
-	return &cfg, nil
+	return cfg, nil
 }
 
 func main() {
@@ -55,22 +55,28 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	err = run(cfg)
+	if err != nil {
+		panic(err)
+	}
+}
 
+func run(cfg config) error {
 	// Setup the database.
 	db, err := models.Open(cfg.PSQL)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer db.Close()
 
 	err = db.Ping()
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	err = models.MigrateFS(db, migrations.FS, ".")
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	// Setup services.
@@ -215,8 +221,5 @@ func main() {
 
 	// Start the server.
 	fmt.Printf("Starting the server on %s...", cfg.Server.Address)
-	err = http.ListenAndServe(cfg.Server.Address, r)
-	if err != nil {
-		panic(err)
-	}
+	return http.ListenAndServe(cfg.Server.Address, r)
 }
