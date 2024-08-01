@@ -220,6 +220,6 @@ func run(cfg config) error {
 	})
 
 	// Start the server.
-	fmt.Printf("Starting the server on %s...", cfg.Server.Address)
+	fmt.Printf("Starting the server on %s...\n", cfg.Server.Address)
 	return http.ListenAndServe(cfg.Server.Address, r)
 }
