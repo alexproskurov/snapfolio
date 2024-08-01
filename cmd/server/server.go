@@ -205,6 +205,9 @@ func main() {
 		})
 	})
 
+	assetsHandler := http.FileServer(http.Dir("assets"))
+	r.Get("/assets/*", http.StripPrefix("/assets", assetsHandler).ServeHTTP)
+
 	//other
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Page not found", http.StatusNotFound)
