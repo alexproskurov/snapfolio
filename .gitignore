@@ -27,7 +27,7 @@ go.work.sum
 .LSOverride
 
 # Binary file
-web-app
+snapfolio
 
 # Images directory during development
 images/

@@ -7,9 +7,9 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/alexproskurov/web-app/context"
-	"github.com/alexproskurov/web-app/errors"
-	"github.com/alexproskurov/web-app/models"
+	"github.com/alexproskurov/snapfolio/context"
+	"github.com/alexproskurov/snapfolio/errors"
+	"github.com/alexproskurov/snapfolio/models"
 )
 
 type User struct {

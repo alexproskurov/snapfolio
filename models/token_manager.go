@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	"github.com/alexproskurov/web-app/rand"
+	"github.com/alexproskurov/snapfolio/rand"
 )
 
 const (

@@ -11,8 +11,8 @@ import (
 	"net/http"
 	"path"
 
-	"github.com/alexproskurov/web-app/context"
-	"github.com/alexproskurov/web-app/models"
+	"github.com/alexproskurov/snapfolio/context"
+	"github.com/alexproskurov/snapfolio/models"
 	"github.com/gorilla/csrf"
 )
 

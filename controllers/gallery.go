@@ -8,9 +8,9 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/alexproskurov/web-app/context"
-	"github.com/alexproskurov/web-app/errors"
-	"github.com/alexproskurov/web-app/models"
+	"github.com/alexproskurov/snapfolio/context"
+	"github.com/alexproskurov/snapfolio/errors"
+	"github.com/alexproskurov/snapfolio/models"
 	"github.com/go-chi/chi/v5"
 )
 

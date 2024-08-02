@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/alexproskurov/web-app/controllers"
-	"github.com/alexproskurov/web-app/migrations"
-	"github.com/alexproskurov/web-app/models"
-	"github.com/alexproskurov/web-app/templates"
-	"github.com/alexproskurov/web-app/views"
+	"github.com/alexproskurov/snapfolio/controllers"
+	"github.com/alexproskurov/snapfolio/migrations"
+	"github.com/alexproskurov/snapfolio/models"
+	"github.com/alexproskurov/snapfolio/templates"
+	"github.com/alexproskurov/snapfolio/views"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"

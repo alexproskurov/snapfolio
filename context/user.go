@@ -3,7 +3,7 @@ package context
 import (
 	"context"
 
-	"github.com/alexproskurov/web-app/models"
+	"github.com/alexproskurov/snapfolio/models"
 )
 
 type key string
