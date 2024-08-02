@@ -136,7 +136,7 @@ func (u User) ProcessForgotPassword(w http.ResponseWriter, r *http.Request) {
 	pwReset, err := u.PasswordResetService.Create(data.Email)
 	if err != nil {
 		if errors.Is(err, models.ErrUserDoesNotExist) {
-			err = errors.Public(err, "Couldn't find your Photogram Account")
+			err = errors.Public(err, "Couldn't find your SnapFolio Account")
 			u.Templates.ForgotPassword.Execute(w, r, data, err)
 			return
 		}
@@ -147,7 +147,7 @@ func (u User) ProcessForgotPassword(w http.ResponseWriter, r *http.Request) {
 	vals := url.Values{
 		"token": {pwReset.Token},
 	}
-	resetURL := "https://www.photogram.com/reset-pw?" + vals.Encode()
+	resetURL := "https://www.snapfolio.com/reset-pw?" + vals.Encode()
 	err = u.EmailService.ForgotPassword(data.Email, resetURL)
 	if err != nil {
 		err = errors.Public(err, "Something went wrong. Try again later.")

@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	DefaultSender = "support@photogram.com"
+	DefaultSender = "support@snapfolio.com"
 )
 
 type Email struct {
