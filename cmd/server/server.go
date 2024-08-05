@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/alexproskurov/snapfolio/controllers"
 	"github.com/alexproskurov/snapfolio/migrations"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/httprate"
 	"github.com/gorilla/csrf"
 	"github.com/spf13/viper"
 )
@@ -162,6 +164,7 @@ func run(cfg config) error {
 	r.Use(csrfMw)
 	r.Use(umw.SetUser)
 	r.Use(middleware.Logger)
+	r.Use(httprate.LimitAll(100, 1*time.Minute))
 	r.Get("/", controllers.StaticHandler(views.Must(views.ParseFS(
 		templates.FS,
 		"tailwind.gohtml", "home.gohtml",
